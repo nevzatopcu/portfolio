@@ -5,7 +5,7 @@ import { useRef, useState, useEffect } from 'react';
 import { FaBriefcase, FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
 
 const Experience = () => {
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, amount: 0.2 });
 
   const experiences = [
@@ -134,7 +134,10 @@ const Experience = () => {
 };
 
 // Custom useInView hook
-function useInView(ref, options) {
+function useInView(
+  ref: React.RefObject<HTMLElement | null>,
+  options: IntersectionObserverInit & { once?: boolean; amount?: number }
+) {
   const [isInView, setIsInView] = useState(false);
   
   useEffect(() => {
@@ -143,16 +146,17 @@ function useInView(ref, options) {
     const observer = new IntersectionObserver(([entry]) => {
       setIsInView(entry.isIntersecting);
       
-      if (entry.isIntersecting && options.once) {
+      if (entry.isIntersecting && options.once && ref.current) {
         observer.unobserve(ref.current);
       }
     }, options);
     
-    observer.observe(ref.current);
+    const currentRef = ref.current;
+    observer.observe(currentRef);
     
     return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, [ref, options]);
